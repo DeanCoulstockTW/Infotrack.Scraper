@@ -1,0 +1,15 @@
+﻿@using System.IO
+@{
+    ViewData["Title"] = "Results";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>Here are your positions for today with the keywords "online title search".</p>
+
+@{
+    var results = await File.ReadAllTextAsync("numberedResults.txt");
+}
+
+<td>
+    @results
+</td>

@@ -1,7 +1,12 @@
 namespace OnlineTitleSearch.Models
 {
     public class SearchModel
-    {        
-        public string SearchStrings { get; set; }
+    {
+        public enum SearchEngine
+        {
+            Google,
+        }
+
+        public bool GoogleSelected = true; // limit user to use google until Bing logic is implemented
     }
 }

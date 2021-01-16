@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OnlineTitleSearch.Models;
@@ -23,80 +26,81 @@ namespace OnlineTitleSearch.Controllers
         [HttpPost]
         public ActionResult Index(SearchModel searchModel)
         {
-            System.IO.File.Delete("numberedResults.csv");
-            string[] staticPages = System.IO.File.ReadAllLines("staticPages.txt");
-            foreach (string URI in staticPages)
+            string pages = null;
+            System.IO.File.Delete("numberedResults.txt"); // reset for a fresh file every run
+            if (searchModel.GoogleSelected)
             {
-                FindResults(URI);
+                pages = "staticGooglePages.txt";
             }
+            var iteration = 0; // track how many pages have been crawled, so that results are numbered correctly
+            var staticPages = System.IO.File.ReadAllLines(pages ?? throw new FileLoadException());
             
-            return View();
-        }
+            foreach (var uri in staticPages) // perform scraping operation on all available static webpages
+            {
+                FindResults(uri, iteration);
+                iteration += 8; 
+            }
 
-        private void FindResults(string searchUrl)
+            return View("Results", Results());
+        }
+        private static void FindResults(string searchUrl, int iteration) // this calls the pages, parses the html, and returns all the results we're interested in 
         {
             var response = CallUrl(searchUrl).Result;
             var linkList = ParseHtml(response);
-            var finalValueList = ReturnResults(linkList);
-            WriteToCsv(finalValueList);
+            var finalValueList = ReturnResults(linkList, iteration);
+            WriteToTxt(finalValueList);
         }
         private static async Task<string> CallUrl(string fullUrl)
         {
-            HttpClient client = new HttpClient();
+            var client = new HttpClient();
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;
             client.DefaultRequestHeaders.Accept.Clear();
             var response = client.GetStringAsync(fullUrl);
             return await response;
         }
         
-        private List<string> ParseHtml(string html)
+        private static IEnumerable<string> ParseHtml(string html)
         {
-            HtmlDocument htmlDoc = new HtmlDocument();
+            var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(html);
-            var resultLinks = htmlDoc.DocumentNode.Descendants("div")
-                .Where(node => 
-                    node.GetAttributeValue("class", "").Contains("r")).ToList();
-                
-            List<string> formattedLink = new List<string>();
+            
+                var resultLinks = htmlDoc.DocumentNode.Descendants("div")
+                    .Where(node => 
+                        node.GetAttributeValue("class", "").Contains("r")).ToList();
 
-            foreach (var link in resultLinks)
-            {
-                if (link.FirstChild.Attributes.Contains("href"))
-                    formattedLink.Add(link.FirstChild.Attributes[0].Value);
-            }
-
-            return formattedLink;
+                return (from link in resultLinks where link.FirstChild.Attributes.Contains("href") select link.FirstChild.Attributes[0].Value).ToList();
 
         }
-        private void WriteToCsv(List<int> links)
+        private static void WriteToTxt(List<int> links)
         {
-            StringBuilder sb = new StringBuilder();
+            if (links == null) throw new ArgumentNullException(nameof(links));
+            var sb = new StringBuilder();
             foreach (var link in links)
             {
-                sb.Append(link.ToString() + ",");
+                sb.AppendLine(link.ToString() + ".. ");
             }
 
-            System.IO.File.AppendAllText("numberedResults.csv", sb.ToString().TrimEnd(','));
+            System.IO.File.AppendAllText("numberedResults.txt",   sb.ToString());
         }
 
-        private List<int> ReturnResults(List<string> links)
+        private static List<int> ReturnResults(IEnumerable<string> links, int iteration)
         {
-            List<int> stringOfNumberedResults = new List<int>();
+            var stringOfNumberedResults = new List<int>();
             var iterator = 1;
             
             foreach (var link in links)
             {
-                if (!link.Contains("infotrack"))
+                switch (link.Contains("infotrack"))
                 {
-                    iterator += 1;
-                }
-                else
-                {
-                    stringOfNumberedResults.Add(iterator);
-                    iterator += 1;
+                    case false:
+                        iterator += 1;
+                        break;
+                    default:
+                        stringOfNumberedResults.Add(iterator + iteration);
+                        iterator += 1;
+                        break;
                 }
             }
-
             return stringOfNumberedResults;
         }
 
@@ -105,7 +109,7 @@ namespace OnlineTitleSearch.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Results()
         {
             return View();
         }

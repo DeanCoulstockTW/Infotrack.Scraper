@@ -3,17 +3,23 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    @model OnlineTitleSearch.Models.SearchModel
-    <h5>Input any value and press enter to create a CSV with your results</h5>
-    <h6>(currently hardcoded to search for "online title search" among google static pages</h6>
-
+    <h1 class="mg-b">Welcome</h1>
+    @model SearchModel
+    <h5>In this revision the entire search process is currently hardcoded. Hit the button and enjoy.</h5>
+    <h5>Search with:</h5>
     @using (Html.BeginForm("Index", "Home", FormMethod.Post))
     {
-    @Html.TextBoxFor(m => m.SearchStrings, new {@class = "searchBox" })
-    }
     
+        @Html.DropDownListFor(m => m.GoogleSelected, new SelectList(Enum.GetValues(typeof(SearchModel.SearchEngine))))
+        <Html lang="en">
+            <br/>
+            <input type="submit" value="Search" class="searchButton mg-t"/>
+        </Html>
+    
+    }
     <style>
-        .black { color:#000000; }
+        .mg-b {margin-bottom: 20px;}
+        .mg-t {margin-top: 20px;}
     </style>
+
 </div>
