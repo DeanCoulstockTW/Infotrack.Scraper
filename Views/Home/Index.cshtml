@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    @model OnlineTitleSearch.Models.SearchModel
+    <h5>Input any value and press enter to create a CSV with your results</h5>
+    <h6>(currently hardcoded to search for "online title search" among google static pages</h6>
+
+    @using (Html.BeginForm("Index", "Home", FormMethod.Post))
+    {
+    @Html.TextBoxFor(m => m.SearchStrings, new {@class = "searchBox" })
+    }
+    
+    <style>
+        .black { color:#000000; }
+    </style>
+</div>
