@@ -41,10 +41,11 @@ namespace OnlineTitleSearch.OnlineTitleSearch.Tests
         public void ReturnResults_Returns_Results_Correctly()
         {
             const string searchUrl = "https://infotrack-tests.infotrack.com.au/Google/Page01.html";
-
+            string searchTerm = "infotrack";
+            
             string response = Controllers.HomeController.CallUrl(searchUrl).Result;
             IEnumerable<string> result = Controllers.HomeController.ParseHtml(response);
-            List<int> finalValueList = Controllers.HomeController.ReturnResults(result, 0);
+            List<int> finalValueList = Controllers.HomeController.ReturnResults(result, 0, searchTerm);
 
             Assert.NotEmpty(finalValueList);
             Assert.True((finalValueList[0].Equals(1)) && (finalValueList[1].Equals(8)));
@@ -56,10 +57,11 @@ namespace OnlineTitleSearch.OnlineTitleSearch.Tests
             File.Delete("numberedResults.txt"); // reset for a fresh file every run
 
             const string searchUrl = "https://infotrack-tests.infotrack.com.au/Google/Page01.html";
+            string searchTerm = "infotrack";
 
             string response = Controllers.HomeController.CallUrl(searchUrl).Result;
             IEnumerable<string> result = Controllers.HomeController.ParseHtml(response);
-            List<int> finalValueList = Controllers.HomeController.ReturnResults(result, 0);
+            List<int> finalValueList = Controllers.HomeController.ReturnResults(result, 0, searchTerm);
 
             Controllers.HomeController.WriteToTxt(finalValueList);
 

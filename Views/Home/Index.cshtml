@@ -5,21 +5,23 @@
 <div class="text-center">
     <h1 class="mg-b">Welcome</h1>
     @model SearchModel
-    <h5>In this revision the entire search process is currently hardcoded. Hit the button and enjoy.</h5>
     <h5>Search with:</h5>
     @using (Html.BeginForm("Index", "Home", FormMethod.Post))
     {
-    
-        @Html.DropDownListFor(m => m.GoogleSelected, new SelectList(Enum.GetValues(typeof(SearchModel.SearchEngine))))
         <Html lang="en">
+        Please enter a URL, or keyword to scrape for
+        e.g. ".com.au", "infotrack".
+    @Html.TextBoxFor(m => m.SearchTerm, new { @class = "form-control mg-b" })  
+        @Html.DropDownListFor(m => m.GoogleSelected, new SelectList(Enum.GetValues(typeof(SearchModel.SearchEngine))))
             <br/>
             <input type="submit" value="Search" class="searchButton mg-t"/>
         </Html>
     
     }
     <style>
-        .mg-b {margin-bottom: 20px;}
+        .mg-b {margin-bottom: 25px;}
         .mg-t {margin-top: 20px;}
+        .form-control {width: 20%; margin: 0px auto; }
     </style>
 
 </div>

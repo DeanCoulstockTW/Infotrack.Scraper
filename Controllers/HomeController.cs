@@ -27,6 +27,8 @@ namespace OnlineTitleSearch.Controllers
         {
             System.IO.File.Delete("numberedResults.txt"); // reset for a fresh file every run
 
+            var searchTerm = searchModel.SearchTerm;
+            
             string pagesToScrape = null;
             int iteration = 0; // track how many pages have been crawled, so that results are numbered correctly
             
@@ -35,7 +37,7 @@ namespace OnlineTitleSearch.Controllers
             
             foreach (string uri in staticPages) // perform scraping operation on all available static webpages
             {
-                FindResults(uri, iteration);
+                FindResults(uri, iteration, searchTerm);
                 iteration += 8; 
             }
 
@@ -52,11 +54,11 @@ namespace OnlineTitleSearch.Controllers
                 return s;
             }
         }
-        public static string FindResults(string searchUrl, int iteration) // this calls the pages, parses the html, and returns all the results we're interested in 
+        public static string FindResults(string searchUrl, int iteration, string searchTerm) // this calls the pages, parses the html, and returns all the results we're interested in 
         {
             string response = CallUrl(searchUrl).Result;
             IEnumerable<string> linkList = ParseHtml(response);
-            List<int> finalValueList = ReturnResults(linkList, iteration);
+            List<int> finalValueList = ReturnResults(linkList, iteration, searchTerm);
             
             WriteToTxt(finalValueList);
             
@@ -87,14 +89,14 @@ namespace OnlineTitleSearch.Controllers
 
         }
 
-        public static List<int> ReturnResults(IEnumerable<string> links, int iteration)
+        public static List<int> ReturnResults(IEnumerable<string> links, int iteration, string searchTerm)
         {
             List<int> stringOfNumberedResults = new List<int>();
             int iterator = 1;
             
             foreach (string link in links)
             {
-                switch (link.Contains("infotrack"))
+                switch (link.Contains(searchTerm))
                 {
                     case false:
                         iterator += 1;
