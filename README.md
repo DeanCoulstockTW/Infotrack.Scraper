@@ -2,7 +2,7 @@
 
 This is a dotnet project that utilizes built in libraries like HtmlAgilityPack to call, parse, and scrape HTML pages.
 
-The current revision has the inputs hardcoded, including the URL to scrape for- as the task description was unclear and already provided the static pages.
+The only search engine currently available is Google. (Ran out of time, other obligations to fulfill)
 
 ## Installation
 
