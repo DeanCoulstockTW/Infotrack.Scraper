@@ -6,3 +6,4 @@ riderModule.iml
 wwwroot/*
 .idea
 *.user
+*.txt

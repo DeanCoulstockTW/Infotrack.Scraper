@@ -108,15 +108,20 @@ namespace OnlineTitleSearch.Controllers
             return stringOfNumberedResults;
         }
 
-        public static void WriteToTxt(List<int> links)
+        public static void WriteToTxt(List<int> positions)
         {
-            if (links == null) throw new ArgumentNullException(nameof(links));
+            if (positions == null) throw new ArgumentNullException(nameof(positions));
             StringBuilder sb = new StringBuilder();
             
-            for (int index = 0; index < links.Count; index++)
+            for (int index = 0; index < positions.Count; index++)
             {
-                int link = links[index];
-                sb.AppendLine(link.ToString() + ".. ");
+                int position = positions[index];
+                switch (position)
+                {
+                    case <= 50:
+                        sb.AppendLine(position.ToString() + ".. ");
+                        break;
+                }
             }
 
             System.IO.File.AppendAllText("numberedResults.txt",   sb.ToString());
