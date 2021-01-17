@@ -4,6 +4,10 @@ This is a dotnet project that utilizes built in libraries like HtmlAgilityPack t
 
 The only search engine currently available is Google. (Ran out of time, other obligations to fulfill)
 
+Technologies used:
+  - HTMLAgilityPack (build in library for calling & parsing websites, not external)
+  - XUnit (Test suite)
+  
 ## Installation
 
 Use your favourite method to install the dotnet sdk on your machine.
