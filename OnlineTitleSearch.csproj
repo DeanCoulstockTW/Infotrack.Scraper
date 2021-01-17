@@ -2,11 +2,22 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <GenerateProgramFile>false</GenerateProgramFile>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="HtmlAgilityPack" Version="1.11.29" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
       <PackageReference Include="xunit" Version="2.4.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="OnlineTitleSearch.Tests\obj\OnlineTitleSearch.Tests.csproj.nuget.dgspec.json" />
+      <_ContentIncludedByDefault Remove="OnlineTitleSearch.Tests\obj\project.assets.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="OnlineTitleSearch.Tests\bin\Debug\net5.0" />
     </ItemGroup>
 
 </Project>

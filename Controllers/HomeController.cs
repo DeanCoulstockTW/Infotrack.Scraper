@@ -25,69 +25,74 @@ namespace OnlineTitleSearch.Controllers
         [HttpPost]
         public ActionResult Index(SearchModel searchModel)
         {
-            string pages = null;
             System.IO.File.Delete("numberedResults.txt"); // reset for a fresh file every run
-            if (searchModel.GoogleSelected)
-            {
-                pages = "staticGooglePages.txt";
-            }
-            var iteration = 0; // track how many pages have been crawled, so that results are numbered correctly
-            var staticPages = System.IO.File.ReadAllLines(pages ?? throw new FileLoadException());
+
+            string pagesToScrape = null;
+            int iteration = 0; // track how many pages have been crawled, so that results are numbered correctly
             
-            foreach (var uri in staticPages) // perform scraping operation on all available static webpages
+            pagesToScrape = CurateSearchEngine(pagesToScrape);
+            string[] staticPages = System.IO.File.ReadAllLines(pagesToScrape ?? throw new FileLoadException());
+            
+            foreach (string uri in staticPages) // perform scraping operation on all available static webpages
             {
                 FindResults(uri, iteration);
                 iteration += 8; 
             }
 
             return View("Results", Results());
+
+            string CurateSearchEngine(string s)
+            {
+                s = searchModel.GoogleSelected switch
+                {
+                    true => "staticGooglePages.txt",
+                    _ => s
+                };
+
+                return s;
+            }
         }
-        private static void FindResults(string searchUrl, int iteration) // this calls the pages, parses the html, and returns all the results we're interested in 
+        public static string FindResults(string searchUrl, int iteration) // this calls the pages, parses the html, and returns all the results we're interested in 
         {
-            var response = CallUrl(searchUrl).Result;
-            var linkList = ParseHtml(response);
-            var finalValueList = ReturnResults(linkList, iteration);
+            string response = CallUrl(searchUrl).Result;
+            IEnumerable<string> linkList = ParseHtml(response);
+            List<int> finalValueList = ReturnResults(linkList, iteration);
+            
             WriteToTxt(finalValueList);
+            
+            return response;
         }
-        private static async Task<string> CallUrl(string fullUrl)
+        public static async Task<string> CallUrl(string fullUrl)
         {
-            var client = new HttpClient();
+            HttpClient client = new HttpClient();
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;
+            
             client.DefaultRequestHeaders.Accept.Clear();
-            var response = client.GetStringAsync(fullUrl);
+            
+            Task<string> response = client.GetStringAsync(fullUrl);
+            
             return await response;
         }
         
-        private static IEnumerable<string> ParseHtml(string html)
+        public static IEnumerable<string> ParseHtml(string html)
         {
-            var htmlDoc = new HtmlDocument();
+            HtmlDocument htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(html);
             
-                var resultLinks = htmlDoc.DocumentNode.Descendants("div")
+                List<HtmlNode> resultLinks = htmlDoc.DocumentNode.Descendants("div")
                     .Where(node => 
                         node.GetAttributeValue("class", "").Contains("r")).ToList();
 
                 return (from link in resultLinks where link.FirstChild.Attributes.Contains("href") select link.FirstChild.Attributes[0].Value).ToList();
 
         }
-        private static void WriteToTxt(List<int> links)
-        {
-            if (links == null) throw new ArgumentNullException(nameof(links));
-            var sb = new StringBuilder();
-            foreach (var link in links)
-            {
-                sb.AppendLine(link.ToString() + ".. ");
-            }
 
-            System.IO.File.AppendAllText("numberedResults.txt",   sb.ToString());
-        }
-
-        private static List<int> ReturnResults(IEnumerable<string> links, int iteration)
+        public static List<int> ReturnResults(IEnumerable<string> links, int iteration)
         {
-            var stringOfNumberedResults = new List<int>();
-            var iterator = 1;
+            List<int> stringOfNumberedResults = new List<int>();
+            int iterator = 1;
             
-            foreach (var link in links)
+            foreach (string link in links)
             {
                 switch (link.Contains("infotrack"))
                 {
@@ -101,6 +106,20 @@ namespace OnlineTitleSearch.Controllers
                 }
             }
             return stringOfNumberedResults;
+        }
+
+        public static void WriteToTxt(List<int> links)
+        {
+            if (links == null) throw new ArgumentNullException(nameof(links));
+            StringBuilder sb = new StringBuilder();
+            
+            for (int index = 0; index < links.Count; index++)
+            {
+                int link = links[index];
+                sb.AppendLine(link.ToString() + ".. ");
+            }
+
+            System.IO.File.AppendAllText("numberedResults.txt",   sb.ToString());
         }
 
         public IActionResult Index()
